@@ -94,6 +94,52 @@ func (r *BoltStore) get(bucketName string) *KeyValue {
 	return value
 }
 
+func SetBulkBytes(bucketName string, list [][]byte) error {
+	return global.setBulkBytes(bucketName, list)
+}
+
+func (r *BoltStore) setBulkBytes(bucketName string, list [][]byte) error {
+	tx, err := r.db.Begin(true)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	bucket := tx.Bucket(r.buckets[bucketName])
+	if bucket == nil {
+		return fmt.Errorf("bucket not found")
+	}
+	for _, v := range list {
+		if err = bucket.Put(ksuid.New().Bytes(), v); err != nil {
+			return fmt.Errorf("error putting value: %s", err)
+		}
+	}
+	return tx.Commit()
+}
+
+func SetBulkString(bucketName string, list []string) error {
+	return global.setBulkString(bucketName, list)
+}
+
+func (r *BoltStore) setBulkString(bucketName string, list []string) error {
+	tx, err := r.db.Begin(true)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	bucket := tx.Bucket(r.buckets[bucketName])
+	if bucket == nil {
+		return fmt.Errorf("bucket not found")
+	}
+	for _, v := range list {
+		if err = bucket.Put(ksuid.New().Bytes(), []byte(v)); err != nil {
+			return fmt.Errorf("error putting value: %s", err)
+		}
+	}
+	return tx.Commit()
+}
+
 func GetOnce(bucketName string) *KeyValue {
 	return global.getOnce(bucketName)
 }
