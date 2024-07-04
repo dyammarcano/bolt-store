@@ -13,8 +13,8 @@ import (
 // 100.000 registros escritos em 205,65 segundos = 486,2 registros por segundo na escrita
 
 func TestNewRetrieveControlWrite(t *testing.T) {
-	if err := NewRetrieveControl(context.TODO(), "testing"); err != nil {
-		t.Errorf("error creating new RetrieveControl: %s", err)
+	if err := NewBoltStore(context.TODO(), "testing"); err != nil {
+		t.Errorf("error creating new BoltStore: %s", err)
 	}
 
 	if err := RegisterBucket("testing"); err != nil {

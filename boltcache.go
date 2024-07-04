@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-var global *RetrieveControl
+var global *BoltStore
 
 type KeyValue struct {
 	db    *bolt.DB
@@ -34,20 +34,20 @@ func (kv *KeyValue) Dispose() error {
 
 type BucketName map[string][]byte
 
-type RetrieveControl struct {
+type BoltStore struct {
 	db      *bolt.DB
 	ctx     context.Context
 	buckets BucketName
 }
 
-func NewRetrieveControl(ctx context.Context, name string) error {
+func NewBoltStore(ctx context.Context, name string) error {
 	filePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s.bolt", name))
 	db, err := bolt.Open(filePath, 0600, nil)
 	if err != nil {
 		return err
 	}
 
-	global = &RetrieveControl{
+	global = &BoltStore{
 		db:      db,
 		ctx:     ctx,
 		buckets: make(map[string][]byte),
@@ -59,7 +59,7 @@ func RegisterBucket(bucketName string) error {
 	return global.registerBucket(bucketName)
 }
 
-func (r *RetrieveControl) registerBucket(bucketName string) error {
+func (r *BoltStore) registerBucket(bucketName string) error {
 	b := sha1.Sum([]byte(bucketName))
 	r.buckets[bucketName] = b[:]
 
@@ -79,7 +79,7 @@ func Get(bucketName string) *KeyValue {
 	return global.get(bucketName)
 }
 
-func (r *RetrieveControl) get(bucketName string) *KeyValue {
+func (r *BoltStore) get(bucketName string) *KeyValue {
 	var value *KeyValue
 	r.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(r.buckets[bucketName])
@@ -98,7 +98,7 @@ func GetOnce(bucketName string) *KeyValue {
 	return global.getOnce(bucketName)
 }
 
-func (r *RetrieveControl) getOnce(bucketName string) *KeyValue {
+func (r *BoltStore) getOnce(bucketName string) *KeyValue {
 	var value *KeyValue
 	r.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(r.buckets[bucketName])
@@ -124,7 +124,7 @@ func SetBytes(bucketName string, value []byte) error {
 	return global.set(bucketName, value)
 }
 
-func (r *RetrieveControl) set(bucketName string, value []byte) error {
+func (r *BoltStore) set(bucketName string, value []byte) error {
 	return r.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(r.buckets[bucketName])
 		if bucket == nil {
@@ -141,7 +141,7 @@ func DeleteBucket(bucketName string) {
 	global.deleteBucket(bucketName)
 }
 
-func (r *RetrieveControl) deleteBucket(bucketName string) error {
+func (r *BoltStore) deleteBucket(bucketName string) error {
 	if r.total(bucketName) > 0 {
 		return fmt.Errorf("bucket not empty")
 	}
@@ -166,7 +166,7 @@ func Total(bucketName string) int {
 	return global.total(bucketName)
 }
 
-func (r *RetrieveControl) total(bucketName string) int {
+func (r *BoltStore) total(bucketName string) int {
 	var total int
 	r.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(r.buckets[bucketName])
@@ -186,7 +186,7 @@ func GetAll(bucketName string) []string {
 	return global.getAll(bucketName)
 }
 
-func (r *RetrieveControl) getAll(bucketName string) []string {
+func (r *BoltStore) getAll(bucketName string) []string {
 	var values = make([]string, 0)
 	r.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(r.buckets[bucketName])
