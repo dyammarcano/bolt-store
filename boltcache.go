@@ -55,6 +55,21 @@ func NewBoltStore(ctx context.Context, name string) error {
 	return nil
 }
 
+func Path() string {
+	return global.db.Path()
+}
+
+func Close() error {
+	return global.close()
+}
+
+func (r *BoltStore) close() error {
+	if err := r.db.Close(); err != nil {
+		return fmt.Errorf("error closing db: %s", err)
+	}
+	return nil
+}
+
 func RegisterBucket(bucketName string) error {
 	return global.registerBucket(bucketName)
 }
@@ -109,7 +124,7 @@ func (r *BoltStore) setBulkBytes(bucketName string, list [][]byte) error {
 	if bucket == nil {
 		return fmt.Errorf("bucket not found")
 	}
-	for _, v := range list {
+	for _, v := range dedupList(list, nil) {
 		if err = bucket.Put(ksuid.New().Bytes(), v); err != nil {
 			return fmt.Errorf("error putting value: %s", err)
 		}
@@ -132,7 +147,7 @@ func (r *BoltStore) setBulkString(bucketName string, list []string) error {
 	if bucket == nil {
 		return fmt.Errorf("bucket not found")
 	}
-	for _, v := range list {
+	for _, v := range dedupList(nil, list) {
 		if err = bucket.Put(ksuid.New().Bytes(), []byte(v)); err != nil {
 			return fmt.Errorf("error putting value: %s", err)
 		}
@@ -246,4 +261,24 @@ func (r *BoltStore) getAll(bucketName string) []string {
 		return nil
 	})
 	return values
+}
+
+func dedupList(listB [][]byte, listS []string) (deduced [][]byte) {
+	keys := make(map[string]struct{})
+
+	for _, v := range listB {
+		if _, ok := keys[string(v)]; !ok {
+			keys[string(v)] = struct{}{}
+			deduced = append(deduced, v)
+		}
+	}
+
+	for _, v := range listS {
+		if _, ok := keys[v]; !ok {
+			keys[v] = struct{}{}
+			deduced = append(deduced, []byte(v))
+		}
+	}
+
+	return
 }

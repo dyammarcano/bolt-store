@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"os"
 	"sync"
 	"testing"
 )
@@ -61,6 +62,12 @@ func TestNewBoltStoreBulkWrite(t *testing.T) {
 	if err := NewBoltStore(context.TODO(), "testing"); err != nil {
 		t.Errorf("error creating new BoltStore: %s", err)
 	}
+	defer func() {
+		if err := Close(); err != nil {
+			t.Errorf("error closing db: %s", err)
+		}
+		os.Remove(Path())
+	}()
 
 	if err := RegisterBucket("testing"); err != nil {
 		t.Errorf("error registering bucket: %s", err)
