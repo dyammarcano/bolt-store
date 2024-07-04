@@ -1,6 +1,6 @@
 //go:build windows
 
-package cache
+package boltcache
 
 import (
 	"context"
