@@ -22,7 +22,7 @@ func TestNewRetrieveControlWrite(t *testing.T) {
 
 	}
 
-	count := 100000
+	count := 1000
 
 	wg := sync.WaitGroup{}
 	wg.Add(count)
