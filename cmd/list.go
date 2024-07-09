@@ -8,7 +8,7 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "List all the items",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("list called")
 	},

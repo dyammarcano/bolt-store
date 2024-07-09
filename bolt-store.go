@@ -1,4 +1,4 @@
-package boltcache
+package store
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/segmentio/ksuid"
 	bolt "go.etcd.io/bbolt"
-	"os"
 	"path/filepath"
 )
 
@@ -40,9 +39,17 @@ type BoltStore struct {
 	buckets BucketName
 }
 
-func NewBoltStore(ctx context.Context, name string) error {
-	filePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s.bolt", name))
-	db, err := bolt.Open(filePath, 0600, nil)
+func NewBoltStore(filePath string) error {
+	return NewBoltStoreContext(context.Background(), filePath)
+}
+
+func NewBoltStoreContext(ctx context.Context, filePath string) error {
+	fp, err := filepath.Abs(filePath)
+	if err != nil {
+		return err
+	}
+
+	db, err := bolt.Open(fp, 0600, nil)
 	if err != nil {
 		return err
 	}

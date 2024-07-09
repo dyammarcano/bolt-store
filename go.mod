@@ -1,4 +1,4 @@
-module github.com/dyammarcano/boltcache
+module github.com/dyammarcano/bolt-store
 
 go 1.22
 

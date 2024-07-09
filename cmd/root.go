@@ -6,8 +6,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "boltcache",
-	Short: "A brief description of your application",
+	Use:   "bolt-store",
+	Short: "A simple CLI to interact with a bolt store",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.Println("Hello, World!")
 		return nil

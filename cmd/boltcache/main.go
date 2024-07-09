@@ -1,6 +1,6 @@
 package main
 
-import "github.com/dyammarcano/boltcache/cmd"
+import "github.com/dyammarcano/bolt-store/cmd"
 
 func main() {
 	cmd.Execute()

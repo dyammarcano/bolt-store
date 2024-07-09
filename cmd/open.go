@@ -8,7 +8,7 @@ import (
 
 var openCmd = &cobra.Command{
 	Use:   "open",
-	Short: "A brief description of your command",
+	Short: "Open the bolt store",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("open called")
 	},

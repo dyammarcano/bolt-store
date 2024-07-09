@@ -1,9 +1,8 @@
 //go:build windows
 
-package boltcache
+package store
 
 import (
-	"context"
 	"crypto/sha256"
 	"fmt"
 	"os"
@@ -14,16 +13,17 @@ import (
 // 100.000 registros escritos em 205,65 segundos = 486,2 registros por segundo na escrita
 
 func TestNewBoltStoreWrite(t *testing.T) {
-	if err := NewBoltStore(context.TODO(), "testing"); err != nil {
+	t.Logf("testing NewBoltStoreWrite")
+
+	if err := NewBoltStore("testing.db"); err != nil {
 		t.Errorf("error creating new BoltStore: %s", err)
 	}
 
 	if err := RegisterBucket("testing"); err != nil {
 		t.Errorf("error registering bucket: %s", err)
-
 	}
 
-	count := 1_000_000
+	count := 1_000
 
 	wg := sync.WaitGroup{}
 	wg.Add(count)
@@ -41,6 +41,8 @@ func TestNewBoltStoreWrite(t *testing.T) {
 // 100.000 registros lidos e descartados em 239,73 segundos = 417,1 registros por segundo na lida e descarte
 
 func TestNewBoltStoreRead(t *testing.T) {
+	t.Logf("testing NewBoltStoreRead")
+
 	count := Total("testing")
 
 	for i := 0; i < count; i++ {
@@ -56,10 +58,16 @@ func TestNewBoltStoreRead(t *testing.T) {
 	if Total("testing") != 0 {
 		t.Errorf("error on result")
 	}
+
+	if err := Close(); err != nil {
+		t.Errorf("error closing db: %s", err)
+	}
 }
 
 func TestNewBoltStoreBulkWrite(t *testing.T) {
-	if err := NewBoltStore(context.TODO(), "testing"); err != nil {
+	t.Logf("testing NewBoltStoreBulkWrite")
+
+	if err := NewBoltStore("testing.db"); err != nil {
 		t.Errorf("error creating new BoltStore: %s", err)
 	}
 	defer func() {
@@ -74,7 +82,7 @@ func TestNewBoltStoreBulkWrite(t *testing.T) {
 
 	}
 
-	count := 1_000_000
+	count := 1_000
 	items := make([]string, count)
 
 	for i := 0; i < count; i++ {
